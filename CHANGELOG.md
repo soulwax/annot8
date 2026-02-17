@@ -1,4 +1,36 @@
 <!-- markdownlint-disable MD025 MD024 -->
+# What's New in Version 0.11.1
+
+## Bug Fixes
+
+### CommonJS / ES Module Support
+
+- **Added `.cjs` and `.mjs` to recognized file patterns**: These extensions were missing from the PATTERNS list, causing the tool to fall back to content-based comment style detection which produced wrong annotations:
+  - Files starting with `/*` (JSDoc blocks) were annotated with `/* File: ... */` instead of `// File: ...`, corrupting the JSDoc structure
+  - Files starting with `#!/usr/bin/env node` were annotated with `# File: ...` instead of `// File: ...`
+
+### Shebang-Aware Comment Style Detection
+
+- **Content-based fallback now skips shebang lines**: When detecting comment style from file content (for unrecognized extensions), the first-line reader now skips `#!` shebang lines and inspects the second line instead. Previously, `#!/usr/bin/env node` was misinterpreted as a `#`-style comment language.
+
+### Wrong-Style Header Detection
+
+- **`_has_existing_header` now detects headers written with any comment style**: If a previous buggy run annotated a `.cjs` file with `# File:` instead of `// File:`, re-running annot8 would fail to detect the existing (wrong) header and add a duplicate. The function now checks all common comment markers (`#`, `//`, `/*`, `<!--`, `--`, `;`, `REM`) regardless of the file's expected style, so it can find and replace incorrect annotations.
+
+## Tests
+
+- Added 18 new tests in `tests/test_cjs_mjs.py` covering:
+  - Comment style detection for `.cjs` and `.mjs`
+  - Basic annotation of plain `.cjs`/`.mjs` files
+  - Shebang preservation with correct `//` comment style
+  - Idempotency (re-running does not duplicate or corrupt)
+  - JSDoc block comment preservation
+  - Correction of wrong-style headers from previous buggy runs
+  - Content-based fallback shebang skipping
+  - Cross-style header detection in `_has_existing_header`
+
+---
+
 # What's New in Version 0.11.0
 
 ## 🌟 Major Features

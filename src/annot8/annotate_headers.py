@@ -39,6 +39,8 @@ PATTERNS = [
     FilePattern(
         [
             ".js",
+            ".cjs",
+            ".mjs",
             ".jsx",
             ".tsx",
             ".ts",
@@ -623,6 +625,8 @@ def _has_existing_header(lines: List[str], comment_start: str, start_index: int 
     """
     Check if file has an existing header at the specified start index.
     This enhanced version detects various header patterns, not just our specific format.
+    It also checks for headers written with the wrong comment style (e.g. from a previous
+    buggy annotation run) so they can be detected and corrected.
     """
     if not lines[start_index:]:
         return False
@@ -638,10 +642,20 @@ def _has_existing_header(lines: List[str], comment_start: str, start_index: int 
         f"{comment_start} Path:",  # Alternative format
     ]
 
+    # Also check for headers written with any common comment style (wrong style detection)
+    all_comment_starts = ["#", "//", "/*", "<!--", "--", ";", "REM"]
+    wrong_style_indicators = []
+    for cs in all_comment_starts:
+        if cs != comment_start:
+            wrong_style_indicators.append(f"{cs} File:")
+            wrong_style_indicators.append(f"{cs}File:")
+
     # Look for these indicators only in the first line or two
     for i in range(start_index, min(start_index + 2, len(lines))):
         line = lines[i].strip()
         if any(line.startswith(indicator) for indicator in header_indicators):
+            return True
+        if any(line.startswith(indicator) for indicator in wrong_style_indicators):
             return True
 
     # If we reach here, we didn't find a primary header indicator
@@ -1000,6 +1014,10 @@ def _get_comment_style(file_path: Path) -> Optional[Tuple[str, str]]:
     try:
         with open(file_path, "r", encoding="utf-8") as f:
             first_line = f.readline().strip()
+
+            # If shebang, skip to next line for comment style detection
+            if first_line.startswith("#!"):
+                first_line = f.readline().strip()
 
             # If it starts with common comment markers, use that
             if first_line.startswith("//"):
