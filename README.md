@@ -1,34 +1,35 @@
 # Annot8
 
-📜 **A comprehensive Python tool** for automating the creation and maintenance of file headers across diverse programming languages and frameworks.
+A comprehensive Python tool for automating the creation and maintenance of file headers across diverse programming languages and frameworks.
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-- 🛠️ **Automatically updates and creates file headers** with intelligent detection and merging
-- 🌐 **Supports 50+ programming languages and file formats**
-- 🎨 **Advanced web framework support** (Vue, Svelte, Astro, React)
-- 🔧 **Qt framework integration** (.pro, .ui, .ts translation files)
-- 🔖 **Preserves special declarations** (shebang, DOCTYPE, XML declarations)
-- 🧠 **Smart header detection and merging** - preserves existing metadata
-- 🚫 **Intelligent file filtering** with comprehensive ignore patterns
-- ⚙️ **Configuration-aware processing** with special handling for config files
-- 🖥️ **CLI interface and Python API** for versatile usage
-- 📝 **Robust text processing** with UTF-8 support and encoding fallbacks
-- 🛡️ **Protects critical files** - automatically skips configs, lock files, and binaries
+- Automatically updates and creates file headers with intelligent detection and merging
+- Supports 70+ programming languages and file formats
+- Advanced web framework support (Vue, Svelte, Astro, React, Handlebars, EJS, Pug, Twig, Jinja2)
+- Qt framework integration (.pro, .ui, .ts translation files)
+- Preserves special declarations (shebang, DOCTYPE, XML declarations)
+- Smart header detection and merging - preserves existing metadata
+- Intelligent file filtering with comprehensive ignore patterns
+- Configuration-aware processing with special handling for config files
+- CLI interface and Python API for versatile usage
+- Git integration with pre-commit hooks, staged-file processing, and metadata extraction
+- Backup and revert functionality to undo changes
+- Dry-run mode to preview changes before applying
 
 ---
 
-## 🛠️ Installation
+## Installation
 
-### 📦 **Install from PyPI** (Recommended)
+### Install from PyPI (Recommended)
 
 ```bash
 pip install annot8
 ```
 
-**Optional dependencies** for enhanced functionality:
+Optional dependencies for enhanced functionality:
 
 ```bash
 # For YAML configuration file support
@@ -44,40 +45,20 @@ pip install annot8[toml]
 pip install annot8[yaml,gitignore,toml]
 ```
 
-### 🔧 **Install from Source** (Development)
+### Install from Source (Development)
 
-1. **Clone the repository:**
-
-   ```bash
-   git clone https://github.com/soulwax/annot8.git
-   cd annot8
-   ```
-
-2. **Install required dependencies:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Install in editable mode:**
-
-   ```bash
-   pip install -e .
-   ```
-
-4. **Install development dependencies (for contributors):**
-
-   ```bash
-   pip install -r requirements-dev.txt
-   ```
+```bash
+git clone https://github.com/soulwax/annot8.git
+cd annot8
+pip install -r requirements.txt
+pip install -e .
+```
 
 ---
 
-## 🚀 Usage
+## Usage
 
-### 🖥️ **Command-Line Interface**
-
-After installation, the `annot8` command is available:
+### Command-Line Interface
 
 ```bash
 # Annotate files in the current directory
@@ -86,59 +67,270 @@ annot8
 # Annotate files in a specific directory
 annot8 -d /path/to/project
 
-# Enable verbose logging
-annot8 -v
-
-# Preview changes without modifying files (dry-run mode)
+# Preview changes without modifying files
 annot8 --dry-run
+
+# Process only git-tracked files
+annot8 --git
+
+# Process only staged files (perfect for pre-commit)
+annot8 --staged
+
+# Use git metadata in headers (author, email, date)
+annot8 --use-git-metadata
+
+# Install a pre-commit hook
+annot8 --install-hook
+
+# Revert the last run
+annot8 --revert
 
 # Combine options
 annot8 -d /path/to/project --dry-run -v
 ```
 
-### 🐍 **Python API**
-
-For use in Python scripts:
+### Python API
 
 ```python
 from pathlib import Path
-from annot8 import process_file, walk_directory
-
-# Process a single file
-process_file(Path("example.py"), Path.cwd())
-
-# Process an entire directory
-walk_directory(Path.cwd(), Path.cwd())
-
-# Use dry-run mode to preview changes
 from annot8.annotate_headers import process_file, walk_directory
 
-# Preview changes for a single file
-result = process_file(Path("example.py"), Path.cwd(), dry_run=True)
-print(f"Status: {result['status']}")  # 'modified', 'skipped', or 'unchanged'
+# Process a single file
+result = process_file(Path("example.py"), Path.cwd())
+print(result["status"])  # "modified", "skipped", or "unchanged"
 
-# Preview changes for entire directory
+# Process an entire directory
+stats = walk_directory(Path.cwd(), Path.cwd())
+
+# Dry-run mode
 stats = walk_directory(Path.cwd(), Path.cwd(), dry_run=True)
 print(f"Would modify: {stats['modified']} files")
-print(f"Would skip: {stats['skipped']} files")
-print(f"Unchanged: {stats['unchanged']} files")
 ```
-
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>
-read_file
 
 ---
 
-## 📁 Comprehensive File Support
+## Before & After Examples
+
+These examples show exactly what annot8 does to your files, including edge cases.
+
+### Basic files
+
+**Python file:**
+
+```python
+# BEFORE                              # AFTER
+print("Hello, World!")                 # File: src/hello.py
+
+                                       print("Hello, World!")
+```
+
+**JavaScript file:**
+
+```javascript
+// BEFORE                              // AFTER
+console.log("Hello, World!");          // File: src/hello.js
+
+                                       console.log("Hello, World!");
+```
+
+**CSS file:**
+
+```css
+/* BEFORE */                           /* AFTER */
+body { margin: 0; }                    /* File: src/styles.css */
+
+                                       body { margin: 0; }
+```
+
+### Shebang preservation
+
+The shebang line always stays on line 1. The header goes on line 2.
+
+```bash
+# BEFORE                              # AFTER
+#!/bin/bash                            #!/bin/bash
+echo "hello"                           # File: scripts/deploy.sh
+
+                                       echo "hello"
+```
+
+```javascript
+// BEFORE                              // AFTER
+#!/usr/bin/env node                    #!/usr/bin/env node
+console.log("cli tool");              // File: bin/cli.cjs
+
+                                       console.log("cli tool");
+```
+
+### CommonJS and ES Modules (.cjs / .mjs)
+
+These use `//` comment style, just like regular `.js` files.
+
+```javascript
+// BEFORE: ecosystem.docker.cjs       // AFTER: ecosystem.docker.cjs
+/**                                    // File: ecosystem.docker.cjs
+ * PM2 config for Docker.
+ */                                    /**
+module.exports = {                      * PM2 config for Docker.
+  apps: [{ name: 'app' }]              */
+};                                     module.exports = {
+                                         apps: [{ name: 'app' }]
+                                       };
+```
+
+```javascript
+// BEFORE: utils.mjs                   // AFTER: utils.mjs
+export function greet(name) {          // File: lib/utils.mjs
+  return `Hello, ${name}`;
+}                                      export function greet(name) {
+                                         return `Hello, ${name}`;
+                                       }
+```
+
+### XML / HTML declaration preservation
+
+Declarations like `<?xml ...?>` and `<!DOCTYPE ...>` stay on line 1. The header goes on line 2.
+
+```html
+<!-- BEFORE -->                        <!-- AFTER -->
+<!DOCTYPE html>                        <!DOCTYPE html>
+<html lang="en">                       <!-- File: public/index.html -->
+<head>                                 <html lang="en">
+  <title>Test</title>                  <head>
+</head>                                  <title>Test</title>
+</html>                                </head>
+                                       </html>
+```
+
+```xml
+<!-- BEFORE -->                        <!-- AFTER -->
+<?xml version="1.0" encoding="UTF-8"?><?xml version="1.0" encoding="UTF-8"?>
+<root>                                 <!-- File: data/config.xml -->
+  <item>Test</item>                    <root>
+</root>                                  <item>Test</item>
+                                       </root>
+```
+
+### Existing header detection (idempotent)
+
+Running annot8 multiple times on the same file does not create duplicate headers.
+
+```python
+# BEFORE (already annotated)           # AFTER (unchanged)
+# File: src/hello.py                   # File: src/hello.py
+
+print("Hello, World!")                 print("Hello, World!")
+```
+
+### Existing header with metadata (merge)
+
+Annot8 preserves useful metadata lines (Author, Version, Copyright, etc.) from existing headers while standardizing the format.
+
+```python
+# BEFORE                              # AFTER
+# Filename: old_name.py               # File: src/utils.py
+# Author: Jane Doe                    # Author: Jane Doe
+# Copyright: 2024 ACME                # Copyright: 2024 ACME
+
+def helper():                          def helper():
+    pass                                   pass
+```
+
+### Wrong comment style correction
+
+If a previous buggy run (or manual edit) used the wrong comment style, annot8 detects and corrects it.
+
+```javascript
+// BEFORE: broken.cjs (wrong # style) // AFTER: broken.cjs (fixed)
+# File: broken.cjs                    // File: broken.cjs
+module.exports = {};
+                                       module.exports = {};
+```
+
+```javascript
+// BEFORE: cli.cjs (wrong # + shebang)// AFTER: cli.cjs (fixed)
+#!/usr/bin/env node                    #!/usr/bin/env node
+# File: cli.cjs                       // File: cli.cjs
+const x = 1;
+                                       const x = 1;
+```
+
+### Web framework files
+
+```html
+<!-- BEFORE: App.vue -->               <!-- AFTER: App.vue -->
+<template>                             <!-- File: src/App.vue -->
+  <div>Hello</div>                     <template>
+</template>                              <div>Hello</div>
+<script setup>                         </template>
+const msg = "hi";                      <script setup>
+</script>                              const msg = "hi";
+                                       </script>
+```
+
+### Custom header templates
+
+With a `.annot8.yaml` config:
+
+```yaml
+header:
+  author: "Jane Doe"
+  version: "2.0.0"
+  include_date: true
+  template: |
+    File: {file_path}
+    Author: {author|Unknown}
+    Version: {version|1.0.0}
+```
+
+Result:
+
+```python
+# File: src/app.py
+# Author: Jane Doe
+# Version: 2.0.0
+
+def main():
+    pass
+```
+
+### Git metadata headers
+
+With `annot8 --use-git-metadata`:
+
+```python
+# File: src/app.py
+# Author: Jane Doe
+# Email: jane@example.com
+# Date: 2026-02-17
+
+def main():
+    pass
+```
+
+### Empty files
+
+Empty files get just the header:
+
+```python
+# BEFORE: (empty file)                # AFTER:
+                                       # File: src/__init__.py
+```
+
+---
+
+## Comprehensive File Support
 
 Annot8 automatically recognizes a vast array of file types and applies appropriate comment styles:
 
-### 🐍 **Programming Languages**
+### Programming Languages
 
 | Language | Extensions | Comment Style |
 |----------|------------|---------------|
 | **Python** | `.py` | `#` |
-| **JavaScript/TypeScript** | `.js`, `.ts`, `.jsx`, `.tsx` | `//` |
+| **JavaScript** | `.js`, `.cjs`, `.mjs` | `//` |
+| **TypeScript** | `.ts`, `.tsx` | `//` |
+| **React JSX** | `.jsx`, `.tsx` | `//` |
 | **C/C++/C#** | `.c`, `.cpp`, `.h`, `.hpp`, `.cs` | `//` |
 | **Java** | `.java` | `//` |
 | **Go** | `.go` | `//` |
@@ -154,7 +346,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **F#** | `.fs`, `.fsx`, `.fsi` | `//` |
 | **V** | `.v` | `//` |
 
-### 🔧 **Systems & Scripting**
+### Systems & Scripting
 
 | Category | Extensions | Comment Style |
 |----------|------------|---------------|
@@ -168,7 +360,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **VHDL** | `.vhd`, `.vhdl` | `--` |
 | **Ada** | `.adb`, `.ads` | `--` |
 
-### 🧮 **Functional & Data Science**
+### Functional & Data Science
 
 | Category | Extensions | Comment Style |
 |----------|------------|---------------|
@@ -191,7 +383,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **Fortran** | `.f`, `.f90`, `.f95`, `.f03`, `.f08` | `!` |
 | **COBOL** | `.cob`, `.cbl` | `*` |
 
-### 🌐 **Web Technologies**
+### Web Technologies
 
 | Category | Extensions | Comment Style | Special Handling |
 |----------|------------|---------------|------------------|
@@ -200,7 +392,6 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **Vue.js** | `.vue` | `<!-- -->` | Template preservation |
 | **Svelte** | `.svelte` | `<!-- -->` | Component structure |
 | **Astro** | `.astro` | `<!-- -->` | Frontmatter preservation |
-| **React JSX/TSX** | `.jsx`, `.tsx` | `//` | - |
 | **MDX** | `.mdx` | `<!-- -->` | Markdown + JSX |
 | **Handlebars** | `.hbs`, `.handlebars` | `<!-- -->` | Template syntax |
 | **EJS** | `.ejs` | `<!-- -->` | Embedded JavaScript |
@@ -209,7 +400,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **Twig** | `.twig` | `{# #}` | PHP templating |
 | **Jinja2** | `.jinja`, `.jinja2` | `{# #}` | Python templating |
 
-### 🔧 **Configuration & Data**
+### Configuration & Data
 
 | Category | Extensions | Comment Style |
 |----------|------------|---------------|
@@ -221,7 +412,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **SQL** | `.sql` | `--` |
 | **reStructuredText** | `.rst` | `..` |
 
-### 🎨 **Qt Framework**
+### Qt Framework
 
 | File Type | Extensions | Comment Style | Special Features |
 |-----------|------------|---------------|------------------|
@@ -230,7 +421,7 @@ Annot8 automatically recognizes a vast array of file types and applies appropria
 | **Resource Files** | `.qrc` | `<!-- -->` | - |
 | **Translation Files** | `.ts` | `<!-- -->` | Auto-detects vs TypeScript |
 
-### 📋 **Special Configuration Files**
+### Special Configuration Files
 
 Annot8 intelligently handles configuration files with appropriate comment styles:
 
@@ -240,159 +431,48 @@ Annot8 intelligently handles configuration files with appropriate comment styles
 - **Package Managers**: `Pipfile`, `pyproject.toml`, `setup.py`
 - **CI/CD**: `.travis.yml`, `.gitlab-ci.yml`, `.drone.yml`
 - **JavaScript Ecosystem**: `package.json`, `tsconfig.json`, `webpack.config.js`
-- **And many more...**
+- And many more...
 
 ---
 
-## 🚫 Protected Files & Directories
+## Protected Files & Directories
 
-### 🔒 **Completely Ignored Files**
+### Completely Ignored Files
 
 Annot8 automatically skips files that shouldn't be modified:
 
-#### Configuration Files
+**Configuration Files:**
+`.prettierrc`, `.eslintrc`, `.babelrc`, `.stylelintrc`, `.browserslistrc`, `.nvmrc`, `.npmrc`, `.yarnrc`, `.env.example`, `.env.local`, `.env.development`, `.env.production`
 
-- **Linting/Formatting**: `.prettierrc`, `.eslintrc`, `.babelrc`, `.stylelintrc`
-- **Build Tools**: `.browserslistrc`, `.nvmrc`, `.npmrc`, `.yarnrc`
-- **Environment**: `.env.example`, `.env.local`, `.env.development`, `.env.production`
+**Auto-Generated / Lock Files:**
+`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Pipfile.lock`, `poetry.lock`, `Cargo.lock`, `go.sum`
 
-#### Auto-Generated Files
+**Documentation & Legal:**
+`LICENSE`, `COPYING`, `NOTICE`, `AUTHORS`, `CONTRIBUTORS`, `README.md`, `CHANGELOG.md`, all `.md` files, all standard `.json` files (only JSON5 gets headers)
 
-- **Lock Files**: `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Pipfile.lock`, `poetry.lock`, `Cargo.lock`, `go.sum`
-- **Build Artifacts**: Files in `build/`, `dist/`, `.next/`, `.nuxt/`, `coverage/`
+**Shader Files:**
+`.vert`, `.frag`, `.geom`, `.comp`, `.tesc`, `.tese`, `.glsl`, `.hlsl`, `.wgsl`, `.shader` - these require `#version` as the first line; headers would break compilation.
 
-#### Documentation & Legal
+**Binary Files:**
+Images, audio/video, archives, executables, compiled files, and more.
 
-- **License Files**: `LICENSE`, `COPYING`, `NOTICE`, `AUTHORS`, `CONTRIBUTORS`
-- **Documentation**: `README.md`, `CHANGELOG.md` (Markdown files)
-- **Standard JSON**: `.json` files (only JSON5 gets headers)
+### Ignored Directories
 
-#### Shader Files
-
-- **GLSL/HLSL Shaders**: `.vert`, `.frag`, `.geom`, `.comp`, `.tesc`, `.tese`, `.glsl`, `.hlsl`, `.wgsl`, `.shader`
-- **Reason**: Shader files require `#version` directive at the very top; headers would break compilation
-
-#### Binary Files
-
-- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.ico`, `.webp`
-- **Audio/Video**: `.mp3`, `.mp4`, `.wav`, `.avi`
-- **Archives**: `.zip`, `.tar`, `.gz`, `.7z`
-- **Executables**: `.exe`, `.dll`, `.so`, `.bin`
-- **And many more binary formats...**
-
-### 📁 **Ignored Directories**
-
-- **Build/Cache**: `__pycache__`, `node_modules`, `build`, `dist`, `.cache`
-- **Version Control**: `.git`, `.hg`, `.svn`
-- **Virtual Environments**: `venv`, `.venv`
-- **Modern Build Tools**: `.next`, `.nuxt`, `.output`, `.parcel-cache`
-- **Package Managers**: `.yarn`, `.pnpm-store`, `vendor`, `bower_components`
+`__pycache__`, `node_modules`, `build`, `dist`, `.cache`, `.git`, `.hg`, `.svn`, `venv`, `.venv`, `.next`, `.nuxt`, `.output`, `.parcel-cache`, `.yarn`, `.pnpm-store`, `vendor`, `bower_components`, `coverage`, and more.
 
 ---
 
-## 🎯 Advanced Features
+## Configuration
 
-### 🔍 **Dry-Run Mode**
+### Configuration Files
 
-Preview changes before applying them! Use `--dry-run` to see what would be modified without actually changing any files:
+Place one of these files in your project root:
 
-```bash
-annot8 --dry-run
-```
+- `.annot8.yaml` or `.annot8.yml` (YAML format)
+- `.annot8.json` (JSON format)
+- `pyproject.toml` (with `[tool.annot8]` section)
 
-**Output includes:**
-
-- List of files that would be modified
-- Summary statistics (modified, skipped, unchanged counts)
-- Safe preview of all changes
-
-This is especially useful for:
-
-- Reviewing changes before committing
-- Understanding the scope of modifications
-- Testing configuration changes
-- CI/CD pipelines for validation
-
-### 🧠 **Intelligent Header Processing**
-
-- **Header Detection**: Recognizes various existing header formats (`# File:`, `// Filename:`, `@file`, etc.)
-- **Smart Merging**: Preserves valuable metadata (author, version, copyright) while standardizing format
-- **Duplicate Prevention**: Prevents duplicate headers on repeated processing
-
-### 🔧 **Special Declaration Handling**
-
-- **Shebang Preservation**: Keeps `#!/bin/bash` and similar at the very top
-- **XML Declarations**: Preserves `<?xml version="1.0"?>` and `<!DOCTYPE>` declarations
-- **Web Framework Structures**: Maintains `<template>`, `<script setup>`, and frontmatter positioning
-
-### 🌐 **Web Framework Intelligence**
-
-- **Vue.js**: Proper handling of Single File Components with `<template>`, `<script>`, `<style>` sections
-- **Svelte**: Component structure preservation
-- **Astro**: Frontmatter and component boundary respect
-- **React**: JSX/TSX with proper import preservation
-
-### 🎨 **Qt Framework Integration**
-
-- **Project Files**: Handles Qt `.pro` and `.pri` files with proper comment syntax
-- **UI Files**: XML-based `.ui` files with declaration preservation  
-- **Translation Files**: Intelligent detection between Qt `.ts` translation files and TypeScript files
-- **Resource Files**: `.qrc` XML resource files
-
-### 🔄 **Robust Text Processing**
-
-- **UTF-8 Support**: Primary UTF-8 processing with graceful fallback encoding
-- **Newline Normalization**: Consistent newline handling without unnecessary trailing lines
-- **Binary Detection**: Content-based binary file detection beyond just extensions
-- **Whitespace Intelligence**: Smart handling of empty files and whitespace-only content
-
-### 🔀 **Git Integration**
-
-Seamlessly integrate Annot8 with your Git workflow:
-
-- **Git-aware processing**: Process only tracked or staged files with `--git` and `--staged` flags
-- **Automatic `.gitignore` respect**: Files ignored by git are automatically skipped (requires optional `pathspec` library)
-- **Git metadata extraction**: Use `--use-git-metadata` to automatically populate headers with:
-  - Author name (from git config or file history)
-  - Email address (from git config)
-  - Last modified date (from git log)
-- **Pre-commit hooks**: Install automatic header annotation with `--install-hook`
-- **Smart fallbacks**: Works gracefully even when git is unavailable
-
-**Usage:**
-
-```bash
-# Process only git-tracked files
-annot8 --git
-
-# Process only staged files (perfect for pre-commit)
-annot8 --staged
-
-# Use git metadata in headers
-annot8 --use-git-metadata
-
-# Combine: process staged files with git metadata
-annot8 --staged --use-git-metadata
-
-# Install pre-commit hook (auto-annotates on commit)
-annot8 --install-hook
-```
-
-**Note:** For full `.gitignore` support, install `pathspec`: `pip install pathspec`
-
----
-
-## ⚙️ **Configuration & Customization**
-
-### 📋 **Configuration Files**
-
-Annot8 supports project-specific configuration via configuration files. Place one of these files in your project root:
-
-- **`.annot8.yaml`** or **`.annot8.yml`** (YAML format)
-- **`.annot8.json`** (JSON format)
-- **`pyproject.toml`** (with `[tool.annot8]` section)
-
-#### Configuration File Example (YAML)
+#### YAML example
 
 ```yaml
 # .annot8.yaml
@@ -402,6 +482,11 @@ header:
   version: "1.0.0"
   include_date: true
   date_format: "%Y-%m-%d"
+  template: |
+    File: {file_path}
+    Author: {author|Unknown}
+    Version: {version|1.0.0}
+    Date: {date}
 
 files:
   ignored_files:
@@ -412,231 +497,98 @@ files:
     - "temp_files"
 ```
 
-#### Configuration File Example (JSON)
-
-```json
-{
-  "header": {
-    "author": "Your Name",
-    "author_email": "your.email@example.com",
-    "version": "1.0.0",
-    "include_date": true,
-    "date_format": "%Y-%m-%d"
-  },
-  "files": {
-    "ignored_files": ["custom_config.json"],
-    "ignored_directories": ["local_data"]
-  }
-}
-```
-
-#### Configuration File Example (TOML in pyproject.toml)
+#### TOML example (pyproject.toml)
 
 ```toml
-[tool.annot8]
 [tool.annot8.header]
 author = "Your Name"
 author_email = "your.email@example.com"
 version = "1.0.0"
 include_date = true
-date_format = "%Y-%m-%d"
 
 [tool.annot8.files]
 ignored_files = ["custom_config.json"]
 ignored_directories = ["local_data"]
 ```
 
-#### Configuration Options
+#### Template Variables
 
-**Header Configuration:**
+| Variable | Description |
+|----------|-------------|
+| `{file_path}` | Relative path from project root |
+| `{file_name}` | Filename only |
+| `{file_stem}` | Filename without extension |
+| `{file_suffix}` | File extension |
+| `{file_dir}` | Directory path |
+| `{author}` | From config or git |
+| `{author_email}` | From config or git |
+| `{version}` | From config |
+| `{date}` | Current or git date |
 
-- `author` - Author name for headers (optional)
-- `author_email` - Author email (optional)
-- `version` - Version string (optional)
-- `include_date` - Whether to include date in headers (default: `false`)
-- `date_format` - Date format string using Python strftime (default: `"%Y-%m-%d"`)
-- `template` - **Custom header template with variables** (see Custom Header Templates section below)
+Use `{variable|default}` syntax for fallback values, e.g. `{author|Unknown}`.
 
-**File Configuration:**
-
-- `ignored_files` - Additional files to ignore (beyond defaults)
-- `ignored_directories` - Additional directories to ignore (beyond defaults)
-- `custom_patterns` - Custom file extension patterns (optional, for future use)
-
-**Note:** For YAML support, install `pyyaml`: `pip install pyyaml`  
-For TOML support on Python < 3.11, install `tomli`: `pip install tomli`
-
-### 🛠️ **Programmatic Configuration**
+### Programmatic Configuration
 
 ```python
-from annot8 import PATTERNS, FilePattern
+from annot8 import PATTERNS, FilePattern, IGNORED_DIRS, IGNORED_FILES
 
 # Add custom file types
 PATTERNS.append(FilePattern([".custom"], "//", ""))
 
-# Add multi-line comment style
-PATTERNS.append(FilePattern([".special"], "/*", "*/"))
-```
-
-### 🚫 **Customizing Ignored Items**
-
-```python
-from annot8 import IGNORED_DIRS, IGNORED_FILES, SPECIAL_FILE_COMMENTS
-
-# Extend ignored directories
-IGNORED_DIRS.add("my_custom_build_dir")
-
-# Add files to completely ignore
+# Extend ignore lists
+IGNORED_DIRS.add("my_build_dir")
 IGNORED_FILES.add("my-config.json")
-
-# Define special files with unique comment styles
-SPECIAL_FILE_COMMENTS["my-config"] = ("#", "")
-```
-
-### 🎯 **Advanced Pattern Configuration**
-
-```python
-# Access all available constants
-from annot8 import (
-    PATTERNS,           # File extension patterns and comment styles
-    IGNORED_DIRS,       # Directories to skip during traversal
-    IGNORED_FILES,      # Files to completely ignore
-    BINARY_EXTENSIONS,  # Known binary file extensions
-    SPECIAL_FILE_COMMENTS  # Special files with custom comment styles
-)
 ```
 
 ---
 
-## 🆕 **What's New in Version 0.5.0**
+## Contributing
 
-### 🚫 **Enhanced File Protection**
+Contributions are welcome! Please open a Pull Request for any improvements.
 
-- **Comprehensive IGNORED_FILES set**: Automatically skips 40+ configuration and system files
-- **Prevents configuration breakage**: Files like `.prettierrc`, `.eslintrc`, `.babelrc` are safely ignored
-- **Lock file protection**: Auto-generated files like `package-lock.json`, `yarn.lock` won't be modified
-- **Environment file safety**: All `.env.*` variants are properly protected
+### Development Setup
 
-### 📝 **Improved Text Processing**
+```bash
+git clone https://github.com/soulwax/annot8.git
+cd annot8
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+pip install -e .
+```
 
-- **Eliminated trailing newlines**: Files no longer get unnecessary blank lines at the end
-- **Smarter spacing logic**: Only adds blank lines between header and content when appropriate
-- **Better empty file handling**: Enhanced processing of files with only whitespace
-- **Preserved content integrity**: More robust handling of original file formatting
+### Running Tests
 
-### 🔧 **Technical Improvements**
+```bash
+# Run all tests with coverage
+pytest --cov=annot8 tests/
 
-- **Enhanced binary detection**: Better identification of binary files to skip
-- **UTF-8 robustness**: Improved encoding handling with graceful fallbacks
-- **Processing efficiency**: Optimized file processing logic with fewer unnecessary writes
+# Run linting
+pylint src/annot8 tests
 
----
+# Format code
+black .
 
-## 🤝 **Contributing**
+# All-in-one
+make check
+```
 
-**Contributions to Annot8 are welcome!** Please open a Pull Request for any improvements.
+### Test Coverage
 
-### 🚀 **Development Setup**
+The project maintains 200+ tests covering:
 
-1. **Fork and clone the repository:**
-
-   ```bash
-   git clone https://github.com/soulwax/annot8.git
-   cd annot8
-   ```
-
-2. **Create a virtual environment:**
-
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # Linux/macOS
-   # or
-   venv\Scripts\activate    # Windows
-   ```
-
-3. **Install dependencies:**
-
-   ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
-   ```
-
-4. **Run the test suite:**
-
-   ```bash
-   # Run all tests with coverage
-   pytest --cov=annot8 tests/
-   
-   # Run linting
-   pylint src/annot8 tests
-   
-   # Format code
-   black .
-   
-   # All-in-one command
-   make check
-   ```
-
-### 🧪 **Testing Coverage**
-
-The project maintains comprehensive test coverage including:
-
-- **Core functionality**: File processing, header detection, merging
-- **Web frameworks**: Vue, Svelte, Astro, React component handling  
-- **Qt integration**: Project files, UI files, translation file detection
-- **Special cases**: Shebang preservation, XML declarations, UTF-8 handling
-- **Error conditions**: Binary files, encoding issues, permission problems
+- Core file processing across all supported languages
+- Shebang, DOCTYPE, and XML declaration preservation
+- Web framework template handling (Vue, Svelte, Astro, etc.)
+- Qt framework integration (.pro, .ui, .ts detection)
+- CommonJS/ESM (.cjs/.mjs) annotation and edge cases
+- Header detection, merging, deduplication, and wrong-style correction
+- Git integration, configuration loading, backup/revert
+- Dry-run mode, UTF-8 handling, binary detection
 
 ---
 
-## 🔮 **Roadmap & Future Enhancements**
+## License
 
-### 🚧 **Planned Features**
-
-- [x] **Configuration files**: YAML/JSON/TOML config for project-specific settings
-- [x] **Custom templates**: Configurable header templates with variables
-- [x] **Metadata insertion**: Automatic author/date/version information (via git or config)
-- [x] **Git integration**: Pre-commit hooks and Git-aware processing
-- [x] **Dry-run mode**: Preview changes before applying
-- [x] **Rollback functionality**: Undo header additions
-
-### 🌐 **Language Expansion**
-
-- [ ] **Additional frameworks**: Support for more web and mobile frameworks
-- [ ] **Domain-specific formats**: CAD files, scientific data formats
-- [ ] **Template engines**: Jinja2, Handlebars, Mustache templates
-
-### 🛠️ **Tooling Improvements**
-
-- [ ] **IDE integrations**: VS Code, IntelliJ plugins
-- [ ] **CI/CD actions**: GitHub Actions, GitLab CI templates
-- [ ] **GUI interface**: Desktop application for non-technical users
-- [ ] **Web dashboard**: Browser-based project management
-
-### 📦 **Distribution**
-
-- [x] **PyPI publication**: Official package distribution
-- [ ] **Docker containers**: Containerized execution environments
-- [ ] **Package managers**: Homebrew, Scoop, APT packages
-
----
-
-## 📜 **License**
-
-This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for complete details.
-
----
-
-## 🙏 **Acknowledgments**
-
-Annot8 supports the development workflows of programmers across dozens of languages and frameworks. Special recognition for comprehensive support of:
-
-- **Web Development**: Vue.js, Svelte, Astro, React ecosystems
-- **Systems Programming**: Rust, Go, Zig, and C/C++ development
-- **Cross-Platform Development**: Qt framework integration
-- **DevOps & Configuration**: Extensive config file format support
-- **Data Science**: R, Julia, and Python scientific computing workflows
-
----
-
-*Streamline your project's header management with Annot8 - because consistent code documentation shouldn't be a manual chore.*
+This project is licensed under the **GNU General Public License v3.0**. See the [LICENSE](LICENSE) file for details.
