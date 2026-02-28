@@ -3,10 +3,12 @@
 
 """Shared utilities for tests to reduce code duplication."""
 
+import json
 import shutil
 from pathlib import Path
 
 from annot8.annotate_headers import process_file
+from annot8.config import load_config
 
 
 def create_temp_test_directory(test_dir: Path) -> None:
@@ -29,6 +31,45 @@ def create_test_file_with_header_processing(
     file_path.write_text(content)
     process_file(file_path, project_root)
     return file_path.read_text()
+
+
+def process_test_file_with_json_config(
+    project_root: Path, file_name: str, file_content: str, config_data: dict
+) -> str:
+    """
+    Write a JSON configuration file, process a single test file, and return its
+    processed content.
+
+    Parameters
+    ----------
+    project_root:
+        Root directory for the test project where the `.annot8.json` config
+        file will be written and from which configuration is loaded.
+    file_name:
+        Name of the file to create and process relative to ``project_root``.
+    file_content:
+        Initial content to write into the test file before processing.
+    config_data:
+        Dictionary representing the annot8 configuration to be written to
+        ``.annot8.json``. This should be JSON-serializable and match the
+        structure expected by ``load_config`` (for example, containing any
+        header or file-matching options required by the tests).
+
+    Returns
+    -------
+    str
+        The full text content of the test file after it has been processed
+        by ``process_file`` using the provided configuration.
+    """
+    config_file = project_root / ".annot8.json"
+    config_file.write_text(json.dumps(config_data))
+
+    test_file = project_root / file_name
+    test_file.write_text(file_content)
+
+    config = load_config(project_root)
+    process_file(test_file, project_root, config=config)
+    return test_file.read_text()
 
 
 def assert_file_content_unchanged(

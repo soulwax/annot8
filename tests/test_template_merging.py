@@ -2,12 +2,13 @@
 
 """Tests for template merging with existing headers."""
 
-import json
 import tempfile
 from pathlib import Path
 
-from annot8.annotate_headers import process_file
-from annot8.config import load_config
+from tests.test_utils import (
+    create_test_file_with_header_processing,
+    process_test_file_with_json_config,
+)
 
 
 class TestTemplateMerging:
@@ -17,7 +18,6 @@ class TestTemplateMerging:
         """Test that multi-line templates are not truncated when file has existing header."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-            config_file = temp_path / ".annot8.json"
             config_data = {
                 "header": {
                     "template": (
@@ -25,16 +25,12 @@ class TestTemplateMerging:
                     )
                 }
             }
-            config_file.write_text(json.dumps(config_data))
-
-            # Create file with existing header
-            test_file = temp_path / "test.py"
-            test_file.write_text("# File: test.py\n# Old comment\nprint('hello')")
-
-            config = load_config(temp_path)
-            process_file(test_file, temp_path, config=config)
-
-            content = test_file.read_text()
+            content = process_test_file_with_json_config(
+                temp_path,
+                "test.py",
+                "# File: test.py\n# Old comment\nprint('hello')",
+                config_data,
+            )
             # All template lines should be present
             assert "# File: test.py" in content
             assert "# Author: Unknown" in content
@@ -50,12 +46,9 @@ class TestTemplateMerging:
             temp_path = Path(temp_dir)
             # No template - uses default single-line format
             test_file = temp_path / "test.py"
-            test_file.write_text("# File: test.py\n# Author: Old Author\nprint('hello')")
-
-            # Process without template (default behavior)
-            process_file(test_file, temp_path)
-
-            content = test_file.read_text()
+            content = create_test_file_with_header_processing(
+                test_file, "# File: test.py\n# Author: Old Author\nprint('hello')", temp_path
+            )
             # File path should be updated
             assert "# File: test.py" in content
             # Old author metadata should be preserved
@@ -66,7 +59,6 @@ class TestTemplateMerging:
         """Test multi-line template with metadata from existing header."""
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_path = Path(temp_dir)
-            config_file = temp_path / ".annot8.json"
             config_data = {
                 "header": {
                     "template": (
@@ -78,18 +70,12 @@ class TestTemplateMerging:
                     "include_date": True,
                 }
             }
-            config_file.write_text(json.dumps(config_data))
-
-            # Create file with existing header that has metadata
-            test_file = temp_path / "test.py"
-            test_file.write_text(
-                "# File: test.py\n# Copyright: 2024\n# License: MIT\nprint('hello')"
+            content = process_test_file_with_json_config(
+                temp_path,
+                "test.py",
+                "# File: test.py\n# Copyright: 2024\n# License: MIT\nprint('hello')",
+                config_data,
             )
-
-            config = load_config(temp_path)
-            process_file(test_file, temp_path, config=config)
-
-            content = test_file.read_text()
             # All template lines should be present
             assert "# File: test.py" in content
             assert "# Author: Unknown" in content
