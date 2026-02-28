@@ -176,7 +176,7 @@ class TestCjsJSDocBlockComment:
         """Re-running on a .cjs with JSDoc + correct header should be idempotent."""
         cjs_file = TEST_DIR / "eco_idem.cjs"
         cjs_file.write_text(
-            "// File: eco_idem.cjs\n\n" "/**\n" " * Some JSDoc.\n" " */\n" "module.exports = {};\n"
+            "// File: eco_idem.cjs\n\n/**\n * Some JSDoc.\n */\nmodule.exports = {};\n"
         )
         original = cjs_file.read_text()
         process_file(cjs_file, TEST_DIR)
