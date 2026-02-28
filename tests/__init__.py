@@ -18,9 +18,6 @@ for _module in (_test_utils, _components):
         globals()[_name] = getattr(_module, _name)
     __all__.extend(_public_names)
 
-if "_module" in locals():
-    del _module
-if "_public_names" in locals():
-    del _public_names
-if "_name" in locals():
-    del _name
+globals().pop('_module', None)
+globals().pop('_public_names', None)
+globals().pop('_name', None)
