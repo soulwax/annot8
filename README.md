@@ -1,5 +1,16 @@
 # Annot8
 
+[![PyPI version](https://img.shields.io/pypi/v/annot8.svg)](https://pypi.org/project/annot8/)
+[![PyPI status](https://img.shields.io/pypi/status/annot8.svg)](https://pypi.org/project/annot8/)
+
+**We are openly published on PyPI:** <https://pypi.org/project/annot8/>
+
+```bash
+pip install annot8
+```
+
+You're ready to go.
+
 A comprehensive Python tool for automating the creation and maintenance of file headers across diverse programming languages and frameworks. Keep your codebase consistently documented with zero manual effort.
 
 ---
@@ -627,6 +638,7 @@ header:
 ```
 
 Result for `src/app.py`:
+
 ```python
 # File: src/app.py
 ```
@@ -648,6 +660,7 @@ header:
 ```
 
 Result for `src/app.py`:
+
 ```python
 # File: src/app.py
 # Author: Jane Doe
@@ -670,6 +683,7 @@ header:
 ```
 
 Result (without author/version/license configured):
+
 ```python
 # File: src/app.py
 # Author: Unknown Author
@@ -693,6 +707,7 @@ header:
 ```
 
 Result:
+
 ```python
 # File: src/app.py
 #
@@ -714,6 +729,7 @@ header:
 ```
 
 Result for `src/utils/helper.py`:
+
 ```python
 # Path: src/utils/helper.py
 # Name: helper.py
@@ -727,24 +743,28 @@ Result for `src/utils/helper.py`:
 Templates automatically adapt to each file type's comment syntax:
 
 **Python file** (`helper.py`):
+
 ```python
 # File: helper.py
 # Author: Jane Doe
 ```
 
 **JavaScript file** (`helper.js`):
+
 ```javascript
 // File: helper.js
 // Author: Jane Doe
 ```
 
 **CSS file** (`styles.css`):
+
 ```css
 /* File: styles.css */
 /* Author: Jane Doe */
 ```
 
 **HTML file** (`index.html`):
+
 ```html
 <!-- File: index.html -->
 <!-- Author: Jane Doe -->
@@ -824,6 +844,7 @@ annot8 --use-git-metadata
 ```
 
 With this configuration:
+
 ```yaml
 # .annot8.yaml
 header:
@@ -861,6 +882,7 @@ Annot8 automatically discovers and uses the nearest configuration file.
 #### Corporate/Open Source Templates
 
 **Corporate Projects**:
+
 ```yaml
 header:
   author: "ACME Corp Development Team"
@@ -872,6 +894,7 @@ header:
 ```
 
 **Open Source Projects**:
+
 ```yaml
 header:
   template: |
