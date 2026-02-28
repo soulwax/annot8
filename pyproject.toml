@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "annot8"
-version = "0.12.1"
+version = "0.12.2"
 description = "Python package to annotate files with headers."
 authors = [
     {name = "soulwax", email = "soulwax@nandcore.com"},

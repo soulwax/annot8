@@ -111,7 +111,9 @@ def prepare_existing_header_js(test_dir: Path, filename: str = "existing_header.
     This centralizes setup to avoid duplicate code across test modules.
     """
     js_file = test_dir / filename
-    js_file.write_text("""// Old header comment
+    js_file.write_text(
+        """// Old header comment
 // Author: Someone
-console.log("Hello, World!");""")
+console.log("Hello, World!");"""
+    )
     return js_file
