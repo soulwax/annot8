@@ -1,12 +1,15 @@
-# File: src/annot8/git_integration.py
-
 """Git integration for Annot8."""
+
+from __future__ import annotations
 
 import logging
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Dict, List, Optional, Set
+
+if TYPE_CHECKING:
+    from pathspec import PathSpec
 
 try:
     from pathspec import PathSpec
