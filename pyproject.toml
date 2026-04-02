@@ -89,5 +89,4 @@ good-names = ["i", "j", "k", "ex", "Run", "_", "fp", "id"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "--cov=annot8"
 pythonpath = [".", "src"]

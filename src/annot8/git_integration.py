@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 
 try:
     from pathspec import PathSpec
-    from pathspec.patterns import GitWildMatchPattern
 
     PATHSPEC_AVAILABLE = True
 except ImportError:
@@ -194,7 +193,7 @@ def get_gitignore_patterns(git_root: Path) -> Optional[PathSpec]:
         return None
 
     try:
-        return PathSpec.from_lines(GitWildMatchPattern, filtered_patterns)
+        return PathSpec.from_lines("gitignore", filtered_patterns)
     except (ValueError, TypeError, AttributeError):
         return None
 
