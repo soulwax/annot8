@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.3] - 2026-04-02
+
+### Fixed
+- **Optional `pathspec` dependency import**: Prevented `annot8` from failing at import time when `pathspec` is not installed by deferring the `PathSpec` type dependency correctly.
+- **Gitignore parsing warnings**: Switched gitignore pattern loading to the non-deprecated `pathspec` backend so test runs no longer emit deprecation warnings.
+- **Coverage invocation warning**: Removed duplicate pytest coverage configuration so `pytest --cov=annot8 tests/` runs without the `module-not-measured` warning.
+- **Cross-version Black consistency**: Normalized test formatting and pinned the formatter version used in development and CI so Python 3.8 and 3.9 jobs no longer fail on formatter drift.
+
+### Changed
+- **Release maintenance**: Added regression coverage for optional gitignore support and kept release automation aligned with the patched formatter toolchain.
+
+---
+
 ## [0.12.2] - 2026-02-28
 
 ### Changed
@@ -103,6 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[0.12.3]: https://github.com/soulwax/annot8/compare/v0.12.2...v0.12.3
 [0.12.2]: https://github.com/soulwax/annot8/compare/v0.12.1...v0.12.2
 [0.12.1]: https://github.com/soulwax/annot8/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/soulwax/annot8/compare/v0.11.1...v0.12.0
