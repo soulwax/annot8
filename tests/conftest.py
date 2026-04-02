@@ -1,3 +1,5 @@
+# File: tests/conftest.py
+
 """Pytest-wide configuration hooks."""
 
 

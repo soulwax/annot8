@@ -1,3 +1,5 @@
+# File: tests/test_gitignore_integration.py
+
 """Tests for optional pathspec-backed gitignore support."""
 
 from __future__ import annotations

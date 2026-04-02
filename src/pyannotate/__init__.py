@@ -1,3 +1,5 @@
+# File: src/pyannotate/__init__.py
+
 """Backward-compatible package alias for legacy ``pyannotate`` imports.
 
 Prefer importing from ``annot8``.

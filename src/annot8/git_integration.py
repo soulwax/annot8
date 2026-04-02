@@ -1,3 +1,5 @@
+# File: src/annot8/git_integration.py
+
 """Git integration for Annot8."""
 
 from __future__ import annotations

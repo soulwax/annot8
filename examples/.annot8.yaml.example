@@ -1,3 +1,5 @@
+# File: examples/.annot8.yaml.example
+
 # Annot8 Configuration File Example
 # Copy this file to .annot8.yaml in your project root
 
@@ -44,4 +46,3 @@ files:
   #   ".custom":
   #     comment_start: "//"
   #     comment_end: ""
-
