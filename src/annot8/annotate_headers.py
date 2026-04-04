@@ -35,7 +35,7 @@ class FilePattern:
 # Define supported file patterns and their comment styles
 PATTERNS = [
     # Original patterns - enhanced with more extensions
-    FilePattern([".py", ".sh", ".bash", ".ps1", ".zsh", ".fish"], "#", ""),
+    FilePattern([".py", ".sh", ".bash", ".ps1", ".psm1", ".psd1", ".zsh", ".fish"], "#", ""),
     FilePattern(
         [
             ".js",
@@ -52,6 +52,7 @@ PATTERNS = [
             ".java",
             ".swift",
             ".kt",
+            ".kts",
             ".scala",
             ".dart",
         ],
@@ -62,17 +63,17 @@ PATTERNS = [
     FilePattern([".css", ".scss", ".sass", ".less"], "/*", "*/"),
     # Web frameworks
     FilePattern([".vue", ".svelte"], "<!--", "-->"),  # Vue and Svelte files
-    FilePattern([".jsx", ".tsx"], "//", ""),  # React JSX/TSX (already in js group but explicit)
     FilePattern([".astro"], "<!--", "-->"),  # Astro framework
     FilePattern([".hbs", ".handlebars"], "<!--", "-->"),  # Handlebars templates
     FilePattern([".ejs"], "<!--", "-->"),  # EJS (Embedded JavaScript)
     FilePattern([".pug", ".jade"], "//", ""),  # Pug/Jade templates
     FilePattern([".mustache", ".mst"], "<!--", "-->"),  # Mustache templates
     FilePattern([".twig"], "{#", "#}"),  # Twig (PHP templating)
-    FilePattern([".jinja", ".jinja2"], "{#", "#}"),  # Jinja2 (Python templating)
+    FilePattern([".jinja", ".jinja2", ".njk"], "{#", "#}"),  # Jinja2 / Nunjucks templating
     FilePattern([".mdx"], "<!--", "-->"),  # MDX (Markdown + JSX)
+    FilePattern([".marko"], "<!--", "-->"),  # Marko templates
     # Configuration files
-    FilePattern([".json5"], "//", ""),  # JSON5
+    FilePattern([".json5", ".jsonc"], "//", ""),  # JSON5 / JSON with Comments
     FilePattern([".toml", ".conf", ".cfg", ".ini"], "#", ""),  # Configuration files
     FilePattern([".properties"], "#", ""),  # Java properties
     FilePattern([".yaml", ".yml"], "#", ""),  # YAML files
@@ -83,24 +84,38 @@ PATTERNS = [
     FilePattern([".vhd", ".vhdl"], "--", ""),  # VHDL
     FilePattern([".adb", ".ads"], "--", ""),  # Ada
     FilePattern([".tcl"], "#", ""),  # Tcl
+    FilePattern([".awk"], "#", ""),  # AWK
     FilePattern([".php"], "//", ""),  # PHP (can also use # but // is more common)
     # Shell and script enhancements
     FilePattern([".cmd", ".bat"], "REM", ""),  # Windows batch
-    FilePattern(
-        [".ps1", ".psm1", ".psd1"], "#", ""
-    ),  # PowerShell (already in first group but explicit)
     # Systems programming
     FilePattern([".go"], "//", ""),  # Go
     FilePattern([".rs"], "//", ""),  # Rust
     FilePattern([".zig"], "//", ""),  # Zig
-    FilePattern([".m", ".mm"], "//", ""),  # Objective-C
-    FilePattern([".groovy"], "//", ""),  # Groovy
+    FilePattern([".d"], "//", ""),  # D language
+    FilePattern([".m", ".mm"], "//", ""),  # Objective-C / Objective-C++
+    FilePattern([".cu", ".cuh"], "//", ""),  # CUDA C/C++
+    FilePattern([".sv", ".svh"], "//", ""),  # SystemVerilog
+    FilePattern([".v"], "//", ""),  # V language / Verilog (both use //)
+    FilePattern([".groovy", ".gradle"], "//", ""),  # Groovy / Gradle
     FilePattern([".fs", ".fsx", ".fsi"], "//", ""),  # F#
-    FilePattern([".v"], "//", ""),  # V language
+    # Game / scripting languages
+    FilePattern([".gd"], "#", ""),  # GDScript (Godot Engine)
+    FilePattern([".wren"], "//", ""),  # Wren
+    FilePattern([".as"], "//", ""),  # AngelScript / ActionScript
+    # Smart contract languages
+    FilePattern([".sol"], "//", ""),  # Solidity
+    # Build systems
+    FilePattern([".mk", ".make"], "#", ""),  # GNU Make includes
+    FilePattern([".cmake"], "#", ""),  # CMake
+    FilePattern([".bzl", ".star"], "#", ""),  # Bazel / Starlark
     # Functional languages
     FilePattern([".ex", ".exs"], "#", ""),  # Elixir
     FilePattern([".erl", ".hrl"], "%", ""),  # Erlang
     FilePattern([".hs"], "--", ""),  # Haskell
+    FilePattern([".purs"], "--", ""),  # PureScript
+    FilePattern([".dhall"], "--", ""),  # Dhall
+    FilePattern([".idr", ".lidr"], "--", ""),  # Idris
     FilePattern([".ml", ".mli"], "(*", "*)"),  # OCaml
     FilePattern([".pas", ".pp"], "//", ""),  # Pascal/Delphi (modern uses //)
     FilePattern([".asm", ".s"], ";", ""),  # Assembly
@@ -117,14 +132,15 @@ PATTERNS = [
     FilePattern([".hcl"], "#", ""),  # HCL (HashiCorp Configuration Language)
     # Markup and documentation
     FilePattern([".rst"], ".. ", ""),  # reStructuredText
+    FilePattern([".adoc", ".asciidoc"], "//", ""),  # AsciiDoc
+    FilePattern([".tex", ".sty", ".cls"], "%", ""),  # LaTeX
     # Database
     FilePattern([".sql"], "--", ""),  # SQL
     # Legacy/mainframe
     FilePattern([".cob", ".cbl"], "*", ""),  # COBOL (fixed format, * in column 7)
     FilePattern([".f", ".f90", ".f95", ".f03", ".f08"], "!", ""),  # Fortran
-    # Qt specific files
+    # Qt project files
     FilePattern([".pro", ".pri"], "#", ""),  # Qt project files
-    FilePattern([".ui", ".qrc"], "<!--", "-->"),  # Qt UI and resource files
 ]
 
 # Define directories to ignore
@@ -369,6 +385,15 @@ SPECIAL_FILE_COMMENTS: Dict[str, Tuple[str, str]] = {
     ".drone.yml": ("#", ""),  # Drone CI
     ".circleci": ("#", ""),  # CircleCI config
     ".appveyor.yml": ("#", ""),  # AppVeyor CI
+    # Bazel / Buck build files
+    "BUILD": ("#", ""),  # Bazel BUILD file
+    "BUILD.bazel": ("#", ""),  # Bazel BUILD file (explicit extension)
+    "WORKSPACE": ("#", ""),  # Bazel WORKSPACE file
+    "WORKSPACE.bazel": ("#", ""),  # Bazel WORKSPACE file (explicit extension)
+    # Additional make/build variants
+    "GNUmakefile": ("#", ""),  # GNU Make (case-sensitive variant)
+    # CI/CD
+    "Jenkinsfile": ("//", ""),  # Jenkins declarative/scripted pipeline (Groovy)
 }
 
 
@@ -643,7 +668,24 @@ def _has_existing_header(lines: List[str], comment_start: str, start_index: int 
     ]
 
     # Also check for headers written with any common comment style (wrong style detection)
-    all_comment_starts = ["#", "//", "/*", "<!--", "--", ";", "REM"]
+    all_comment_starts = [
+        "#",
+        "//",
+        "/*",
+        "<!--",
+        "--",
+        ";",
+        "REM",
+        "rem",
+        "%",
+        "!",
+        "'",
+        ";;",
+        "(*",
+        "{#",
+        "*",
+        "..",
+    ]
     wrong_style_indicators = []
     for cs in all_comment_starts:
         if cs != comment_start:
@@ -929,8 +971,8 @@ def is_binary(file_path: Path) -> bool:
 
     try:
         with open(file_path, "rb") as f:
-            # Read first 1024 bytes to determine if file is binary
-            chunk = f.read(1024)
+            # Read first 8192 bytes to determine if file is binary
+            chunk = f.read(8192)
             return b"\0" in chunk  # Binary files typically contain null bytes
     except OSError:
         return True
@@ -1006,8 +1048,9 @@ def _get_comment_style(file_path: Path) -> Optional[Tuple[str, str]]:
         return ("//", "")  # JavaScript style for TypeScript files
 
     # Check extension patterns
+    suffix = file_path.suffix.lower()
     for pattern in PATTERNS:
-        if any(str(file_path).lower().endswith(ext) for ext in pattern.extensions):
+        if suffix in pattern.extensions:
             return (pattern.comment_start, pattern.comment_end)
 
     # Last resort: try to detect from file content
