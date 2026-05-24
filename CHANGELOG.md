@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.5] - 2026-05-24
+
+### Security
+- **Prevent secret leakage via `.annot8_backup.json`**: The backup file used by the revert workflow stored the full original contents of every modified file in the project root, and was not added to `.gitignore` by default. A user who ran `annot8` and then `git commit -am` could publish secrets from any modified file. This release closes that hole with four independent layers:
+  - **Sensitive files are now skipped entirely** before any read, so their content never enters memory or the backup. Newly skipped names: `.env`, `.netrc`, `.pgpass`, `.htpasswd`, `secrets.{json,yaml,yml}`, `credentials.{json,yaml,yml}`, `auth.json`, `.npmrc`, `.pypirc`, `id_{rsa,dsa,ecdsa,ed25519}`, `known_hosts`. Newly skipped glob patterns: `.env.*`, `*.pem`, `*.key`, `*.crt`, `*.cer`, `*.csr`, `*.p12`, `*.pfx`, `*.jks`, `*.keystore`, `*.kdbx`, `*_{rsa,dsa,ecdsa,ed25519}`.
+  - **`.env` is no longer treated as a regular config file** — removed from `SPECIAL_FILE_COMMENTS`. Annot8 will not add headers to `.env` files at all.
+  - **`.annot8_backup.json` is auto-added to `.gitignore`** at the git root on first backup creation (creates `.gitignore` if missing; no-op outside a git repo; deduplicated on subsequent runs).
+  - **Restrictive file permissions** (`chmod 0600`) applied to the backup file on POSIX systems.
+  - **Loud warning** logged at WARNING level on first backup creation: `"Do NOT commit this file."`
+
+### Action recommended for existing users
+If you have an `.annot8_backup.json` from a prior version, **inspect it for secrets** and delete it. Then run `annot8` once on your project to regenerate it under the new protections (or simply delete it if you do not need `--revert`).
+
+### Added
+- New tests in `tests/test_backup_security.py` covering all four hardening layers and a revert regression guard.
+
+---
+
 ## [0.12.3] - 2026-04-02
 
 ### Fixed

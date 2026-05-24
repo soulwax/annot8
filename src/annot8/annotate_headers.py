@@ -3,6 +3,7 @@
 
 """Core functionality for adding and updating file headers."""
 
+import fnmatch
 import logging
 import os
 import re
@@ -314,12 +315,63 @@ BINARY_EXTENSIONS = {
     ".eot",
 }
 
+# Sensitive files that must never be read, modified, or backed up.
+# Matching is by exact filename; SENSITIVE_GLOBS handles patterns.
+SENSITIVE_FILENAMES: Set[str] = {
+    ".env",
+    ".netrc",
+    ".pgpass",
+    ".htpasswd",
+    "secrets.json",
+    "secrets.yaml",
+    "secrets.yml",
+    "credentials.json",
+    "credentials.yaml",
+    "credentials.yml",
+    "auth.json",
+    ".npmrc",
+    ".pypirc",
+    "id_rsa",
+    "id_dsa",
+    "id_ecdsa",
+    "id_ed25519",
+    "known_hosts",
+}
+
+# Glob patterns matched against the file name (not full path).
+SENSITIVE_GLOBS: Tuple[str, ...] = (
+    ".env.*",  # .env.production, .env.local, .env.staging, etc.
+    "*.pem",
+    "*.key",
+    "*.crt",
+    "*.cer",
+    "*.csr",
+    "*.p12",
+    "*.pfx",
+    "*.jks",
+    "*.keystore",
+    "*.kdbx",
+    "*_rsa",
+    "*_dsa",
+    "*_ecdsa",
+    "*_ed25519",
+)
+
+
+def _is_sensitive_file(file_path: Path) -> bool:
+    """Return True if the file matches any sensitive name or glob pattern."""
+    name = file_path.name
+    if name in SENSITIVE_FILENAMES:
+        return True
+    return any(fnmatch.fnmatchcase(name, pat) for pat in SENSITIVE_GLOBS)
+
+
 # Define special config files and their comment styles as (start, end) tuples
 SPECIAL_FILE_COMMENTS: Dict[str, Tuple[str, str]] = {
     # Original entries
     ".gitignore": ("#", ""),
     ".dockerignore": ("#", ""),
-    ".env": ("#", ""),
+    # .env removed: handled by SENSITIVE_FILENAMES (security: never process secret files)
     "Makefile": ("#", ""),
     "CMakeLists.txt": ("#", ""),
     ".clang-format": ("#", ""),
@@ -1111,6 +1163,11 @@ def _should_skip_path(file_path: Path, config: Optional[Annot8Config] = None) ->
     """Centralize skip logic to reduce statements in process_file."""
     if not file_path.is_file():
         logging.warning("File not found: %s", file_path)
+        return True
+    # Security: never read or modify sensitive files (.env, secrets, keys, etc.)
+    # Check before any content read so secrets cannot enter memory or backups.
+    if _is_sensitive_file(file_path):
+        logging.debug("Skipping sensitive file: %s", file_path)
         return True
     if file_path.suffix.lower() in {".md", ".markdown", ".json"} or (
         file_path.name.lower() == "license" and not file_path.suffix

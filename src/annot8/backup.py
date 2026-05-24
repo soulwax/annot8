@@ -4,11 +4,16 @@
 
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
 
+from .git_integration import get_git_root
+
 BACKUP_FILENAME = ".annot8_backup.json"
+
+_GITIGNORE_COMMENT = "# Added by annot8 to prevent committing local backups"
 
 
 def _get_backup_path(project_root: Path) -> Path:
@@ -16,9 +21,55 @@ def _get_backup_path(project_root: Path) -> Path:
     return project_root / BACKUP_FILENAME
 
 
+def _ensure_gitignored(project_root: Path) -> None:
+    """Append BACKUP_FILENAME to .gitignore if inside a git repo and not already present.
+
+    No-op outside git repositories. Creates .gitignore at the git root if missing.
+    """
+    git_root = get_git_root(project_root)
+    if git_root is None:
+        return
+
+    gitignore = git_root / ".gitignore"
+    try:
+        if gitignore.exists():
+            existing = gitignore.read_text(encoding="utf-8")
+            stripped = {line.strip() for line in existing.splitlines()}
+            if BACKUP_FILENAME in stripped or f"/{BACKUP_FILENAME}" in stripped:
+                return
+            # splitlines() drops the trailing newline, so check raw text
+            needs_leading_newline = bool(existing) and not existing.endswith("\n")
+            with gitignore.open("a", encoding="utf-8") as fp:
+                if needs_leading_newline:
+                    fp.write("\n")
+                fp.write(f"{_GITIGNORE_COMMENT}\n")
+                fp.write(f"{BACKUP_FILENAME}\n")
+        else:
+            gitignore.write_text(
+                f"{_GITIGNORE_COMMENT}\n{BACKUP_FILENAME}\n",
+                encoding="utf-8",
+            )
+    except OSError as e:
+        logging.warning("Could not update .gitignore to protect %s: %s", BACKUP_FILENAME, e)
+
+
+def _restrict_backup_permissions(backup_path: Path) -> None:
+    """Best-effort chmod 0600 on the backup file (POSIX only; no-op on Windows)."""
+    try:
+        os.chmod(backup_path, 0o600)
+    except OSError:
+        # Windows or filesystem without POSIX perms; safe to ignore
+        pass
+
+
 def save_backup(project_root: Path, file_backups: Dict[str, str]) -> None:
     """
     Save file backups to the backup file.
+
+    Also auto-adds the backup file to .gitignore (when in a git repo), sets
+    restrictive POSIX permissions, and emits a one-time warning on first
+    creation so the user is aware that the file contains original file
+    contents and must not be committed.
 
     Args:
         project_root: Root directory of the project
@@ -29,6 +80,7 @@ def save_backup(project_root: Path, file_backups: Dict[str, str]) -> None:
         return
 
     backup_path = _get_backup_path(project_root)
+    is_first_backup = not backup_path.exists()
     backup_data = {
         "timestamp": datetime.now().isoformat(),
         "files": file_backups,
@@ -39,6 +91,18 @@ def save_backup(project_root: Path, file_backups: Dict[str, str]) -> None:
         logging.debug("Saved backup for %d files to %s", len(file_backups), backup_path)
     except (OSError, ValueError, TypeError) as e:
         logging.warning("Failed to save backup: %s", e)
+        return
+
+    _restrict_backup_permissions(backup_path)
+    _ensure_gitignored(project_root)
+
+    if is_first_backup:
+        logging.warning(
+            "annot8 wrote a backup containing original file contents to %s. "
+            "Added to .gitignore and chmod'd to 0600 where supported. "
+            "Do NOT commit this file.",
+            backup_path,
+        )
 
 
 def load_backup(project_root: Path) -> Optional[Dict[str, str]]:

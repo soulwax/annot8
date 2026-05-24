@@ -210,3 +210,5 @@ black.txt
 
 .cursor/
 CLAUDE.md
+# Added by annot8 to prevent committing local backups
+.annot8_backup.json
