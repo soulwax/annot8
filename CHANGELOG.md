@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **CI black formatter mismatch**: `requirements-dev.txt` pinned `black==24.8.0`, but local development used a newer black (26.x). The two versions disagreed on how to format a multi-line `write_text("""...""")` call in `tests/test_utils.py`, causing the `Format with black` step to fail across all Python matrix jobs. Bumped the development requirement to `black>=26.3.1` so CI tracks the same formatter used locally.
 
+### Changed
+- **Dropped Python 3.8 and 3.9 support**: Both interpreters are past upstream EOL and `black>=26.3.1` requires Python >=3.10. Updated `requires-python`, classifiers, `[tool.black] target-version`, and the CI matrix accordingly.
+
 ---
 
 ## [0.12.5] - 2026-05-24
