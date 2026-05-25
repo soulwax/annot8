@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.6] - 2026-05-25
+
+### Fixed
+- **CI black formatter mismatch**: `requirements-dev.txt` pinned `black==24.8.0`, but local development used a newer black (26.x). The two versions disagreed on how to format a multi-line `write_text("""...""")` call in `tests/test_utils.py`, causing the `Format with black` step to fail across all Python matrix jobs. Bumped the development requirement to `black>=26.3.1` so CI tracks the same formatter used locally.
+
+---
+
 ## [0.12.5] - 2026-05-24
 
 ### Security
